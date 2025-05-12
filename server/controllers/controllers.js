@@ -19,6 +19,7 @@ exports.createNote = async (req, res) => {
       description: req.body.description,
     });
     const newNote = await note.save();
+    console.log('data has been send to db')
     res.status(201).json(newNote);
   } catch (error) {
     res.status(400).json({ message: error.message });
