@@ -15,7 +15,9 @@ const noteSchema = new mongoose.Schema({
     default: false,
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  toJSON: { virtuals: true }, // This ensures virtual properties are included
+  toObject: { virtuals: true }
 });
 
 module.exports = mongoose.model('Note', noteSchema);

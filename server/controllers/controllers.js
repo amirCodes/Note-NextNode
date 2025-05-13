@@ -29,9 +29,9 @@ exports.createNote = async (req, res) => {
 // Update a note
 exports.updateNote = async (req, res) => {
   try {
+    console.log(req.params.id)
     const note = await Note.findById(req.params.id);
     if (!note) return res.status(404).json({ message: 'Note not found' });
-
     const updatedNote = await Note.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -46,26 +46,46 @@ exports.updateNote = async (req, res) => {
 // Delete a note
 exports.deleteNote = async (req, res) => {
   try {
-    const note = await Note.findById(req.params.id);
-    if (!note) return res.status(404).json({ message: 'Note not found' });
+    const { id } = req.params;
 
-    await note.remove();
-    res.json({ message: 'Note deleted' });
+    // Validate if the id is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid note ID' });
+    }
+
+    const note = await Note.findById(id);
+    if (!note) {
+      return res.status(404).json({ message: 'Note not found' });
+    }
+
+    await Note.findByIdAndDelete(id);
+    res.json({ message: 'Note deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Delete error:', error);
+    res.status(500).json({ message: 'Error deleting note', error: error.message });
   }
 };
 
 // Toggle archive status
 exports.toggleArchive = async (req, res) => {
   try {
-    const note = await Note.findById(req.params.id);
-    if (!note) return res.status(404).json({ message: 'Note not found' });
+    const { id } = req.params;
+
+    // Validate if the id is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid note ID' });
+    }
+
+    const note = await Note.findById(id);
+    if (!note) {
+      return res.status(404).json({ message: 'Note not found' });
+    }
 
     note.archived = !note.archived;
     const updatedNote = await note.save();
     res.json(updatedNote);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Toggle archive error:', error);
+    res.status(500).json({ message: 'Error toggling archive status', error: error.message });
   }
 };
